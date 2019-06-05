@@ -1,0 +1,3 @@
+A properly tail recursive function has the last call as a function call.
+In languages like C, the call to a function means loading to stack. So it means for a recursive function, more memory is used.
+In case of Lua, a function once defined, is not loaded onto stack every time it is called. So it does face the same problem during recursive calls.

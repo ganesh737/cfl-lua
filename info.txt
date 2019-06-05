@@ -1,0 +1,299 @@
+Basic Types: nil, boolean, number, string, userdata, function, thread, and table
+
+type function to get the type
+Ex: print(type("hello"))
+
+nil         --> non-value
+boolean     --> true/false
+                lua considers
+                    both boolean false and nil as false
+                    both zero and empty string as true
+number      --> real (double-precision floating-point) numbers
+                ex: 4  0.4  4.57e-3  0.3e12  5E+20
+                    0xff(255)  0x1A3(419)  0x0.2(0.125)  0x1p-1(0.5)  0xa.bp2(42.75)
+string      --> eight bit clean, can contain characters with any numeric code, including embedded zeros
+                immutable
+                automatic memory management
+                literal strings
+                    a="a"
+                    b='b'
+                    --> each quote can be inside the other. both are same for lua
+                escape characters
+                    \a  bell
+                    \b  back space
+                    \f  form feed
+                    \n  newline
+                    \r  carriage return
+                    \t  horizontal tab
+                    \v  vertical tab
+                    \\  backslash
+                    \"  double quote
+                    \'  single quote
+                strings can be represented by their numerical value
+                    \ddd    --> sequence of upto three decimal digits
+                    \x\hh   --> sequence of exactly two hexadecimal digits
+                    ex:
+                            "alo\n123"
+                        or  '\97lo\10\04923'
+                        or  '\x61\x6c\x6f\x0a\x31\x32\x33\x22'
+                long strings
+                    ignores the first character of the string when this character is a newline
+                    ex: page = [[
+                            <html>
+                                <head>
+                                </head>
+                            </html>
+                        ]]
+                    for non literal strings \z(available in version >= 5.2)
+                        - it skips all subsequent characters in the string until the first non-space character
+                    ex: data = "\x00\x01\x02\z
+                                \x03\x04\x05"
+table       --> implement associative arrays.
+                An associative array is an array that can be indexed not only with numbers,
+                but also with strings or any other value of the language, except nil.
+                Ex: io.read in Lua means "index the table io using the string read as the key"
+                Tables are neither values nor variables; they are objects
+                * dynamically allocated objects
+                * program only manipulates the references(or poitners) to them
+                * tables are anonymous, no fixed relationship between a variable that holds a table and a table itself
+                * when no vaiable holds reference to a table, Lua garbage collector eventually deletes the table for memory reuse
+                * assign nil to table field to delete it
+                * indices start with 1 instead of 0
+                * #a gives size of a
+                create tables with constructor - {}
+                ex: a = {}  -- create a table and store reference in a
+                    k = "x"
+                    a[k] = 10
+                    b = a   -- 'b' refers to same table as a
+                    a.x = 10 -- same as a["x"] = 10
+
+Coercion
+    tostring()
+    tonumber()
+
+Operators
+    Arithmetic Operators
+        + addition
+        - subtraction
+        * multiplication
+        / division
+        ^ exponentiation
+        % modulo
+        - negation
+        math.abs
+        math.pi
+        math.floor
+        math.ceil
+    Relational Operators
+        > < <= >= == ~=
+        For == and ~=, of the values are different types, Lua considers them not equal
+        Comparison of tables is by reference i.e. 2 such values are considered equal only if they are the very same object
+    Logical Operators
+        and or not
+
+        false   --> false, nil
+        true    --> all other values
+
+        and     --> returns its first argument if it is false; otherwise, it returns its second argument
+                --> short-cut evaluation(evaluate their second operand only when necessary)
+        or      --> returns its first argument if it is not false; otherwise, it returns its second argument
+                --> short-cut evaluation(evaluate their second operand only when necessary)
+        not     --> return boolean value
+
+    Concatenation
+        Operator: ..
+        Ex: print( "hello" .. " world" ) --> hello world
+            print(000 .. 1 .. 0000) --> 010
+
+    Length
+        Operator: #
+        Only strings and tables
+        only works for sequences, which we defined as lists without holes
+        a sequence is a table where the numeric keys comprise a set 1..n
+        a table with no numeric keys is a sequence with length zero
+        does not work properly for lists with holes (ex: a[1]=nil)
+
+Table Constructors
+    a = {}
+
+Assignments
+    multiple assignments are possible
+    - lua first evaluates all values and only then executes the assignments
+    Ex: x, y = y, x     -- exchange of values
+        a, b = f(...)   -- return multiple values from function
+
+Scope
+    global and local(using keyword 'local')
+    define custom blocks with do..end
+    scope of local variable includes the loop condition if defined inside the loop
+        ex: local sqr = x/2
+            repeat
+                sqr = (sqr + x/sqr)/2
+                local error = math.abs(sqr^2 - x)
+            until error < x/10000    -- variable 'error' is available outside
+
+Control Structures
+    while, repeat, for
+    terminator 'end' --> if, for, while
+    terminator 'until' --> repeat
+    if -
+        if, elseif, else
+    while -
+        while <condition> do
+            <statements>
+        end
+    repeat -
+        repeat
+            <statements>
+        until <condition>
+    numeric for -
+        for var = start, end, step do
+            <statements>
+        end
+    generic for -
+        for j,v in pairs(t) do
+            <statements>
+        end
+    break
+    return
+    goto
+        while <condition> do
+            ::redo::
+            if <condition1> then goto continue
+            elseif <condition2> then goto redo  -- if condition is say (i>1) and i=i-1 at end of loop, then i is not decremented here
+            end
+            ::continue::
+        end
+
+Functions
+    function <name> (<arguments>)
+        <statements>
+    end
+    if a function has one single argument and that argument is either a literal string or a table constructor, then the parentheses are optional
+    can call functions in Lua or C (or in any other language used by the host application)
+    multiple returns are possible
+    a function call that is not the last element in the list always produces exactly one result
+    an extra pair of parentheses makes sure that only one result is returned
+        function f(a, b) print(a,b) end
+        f(3)        --> 3 nil
+        f(3, 4)     --> 3 4
+        f(3, 4, 5)  --> 3 4 (5 is discarded)
+        function foo0 () end                --> returns no results
+        function foo1 () return "a" end     --> returns 1 result
+        function foo0 () return "a","b" end --> returns 2 results
+        x,y = foo2()        -- x="a", y="b"
+        x = foo2()          -- x="a", "b" is discarded
+        x,y,z= 10,foo2()    -- x=10, y="a", z="b"
+
+        x,y = foo0()        -- x=nil, y=nil
+        x,y = foo1()        -- x="a", y=nil
+        x,y,z = foo2()      -- x="a", y="b", z=nil
+
+        x,y = foo2(), 20 -- x="a", y=20
+        x,y = foo0(), 20, 30 -- x=nil, y=20, 30 is discarded
+
+    Variadic Functions
+        function <name> (<fixed parameters>, ...)   -- ... represents variable number of arguments
+            <statements>
+        end
+        ex: function add (...)
+                local s = 0
+                for i, v in ipairs{...} do
+                    s = s + v
+                end
+                return s
+            end
+            print(add(3, 4, 10, 25, 12)) --> 54
+
+    Anonymous Functions
+        ex: function foo(x) return 2*x end
+            foo = function (x) return 2*x end
+            table.sort(network, function (a,b) return (a.name>b.name) end)
+
+    Closure
+        when we write a function enclosed in another function, it has full access to local variables from the enclosing function
+        - called as lexical scoping
+        Ex: funtion sortByGrade (names, grades)
+                table.sort(names, funtion (n1,n2)
+                    return grages[n1] > grades[n2])
+                    end)
+            end
+
+            -- grades is neither local nor global variable and called non-local variables or upvalues
+        Closure is a function that accesses one or more variables from its enclosing environment. These variables keep the values across successive calls,
+        Closure construct involves 2 functions: the closure itself and factory(the function that creates the closure plus its enclosing variables)
+
+Iterators
+    An interator is a construct that allows you to iterate over the elements of a collection.
+    In Lua, iterators are nothing but functions where it returns the subsequent elemnets on each call.
+    Iterators need to maintain previous state so Closures come to the rescue :)
+    Stateless Iterators
+        An interator that does not keep any state by itself
+        Eg: linked list traverser
+            ipairs()
+            pairs()
+
+    Iterators with Complex Stateless
+        iterators that store their state in table
+
+    Hint: Try to use stateless iterators that keep their state in "for" as much as possible or use Closures
+
+    True Iterators
+        Iterators name is misleading currently in languages since the for loop is the one that is iterating and iterators are only returning the successive values.
+
+        There are other iterators that we simply call. We do not iterate over then with a loop, these are True Iterators.
+        Ex:
+            function allwords (f)
+                for line in io.lines() do
+                    for word in string.gmatch(line, "%w+") do
+                        f(word) -- call the function
+                    end
+                end
+            end
+
+            allwords(print)
+
+            local count = 0
+            allwords(function (w)
+                if w == "hello" then count = count + 1 end
+            end)
+            print(count)
+
+Compilation, Execution and Errors
+    Compilation
+        loadfile
+            --> loads a Lua chunk from a file, but it does not run the chunk.
+                it compiles the chunk and returns the compiled chunk as a function
+                does not handle errors but returns errors so that the caller can handle it
+        dofile
+            --> loads file and runs it
+                function dofile (filename)
+                    local f = assert(loadfile(filename))
+                    return f()
+                end
+        load
+            --> similar to loadfile but takes the chunk from string and not from file
+
+        Differences
+            i = 32
+            local i = 0
+            f = load("i = i + 1; print(i)")
+            g = function () i = i + 1; print(i) end
+            f() --> 33  -- uses global i since load compiles its chunks in global environment
+            g() --> 1   -- uses local i
+
+    Precompiled Code
+        luac to generate precompiled code
+        use string.dump to generate precompiled code from within lua code. basically converts a string to lua compiled code.
+        Ex: p = loadfile(arg[1])
+            f = io.open(arg[2], "wb")
+            f:write(string.dump(p))
+            f:close()
+        Details
+            * size is not always smaller than original
+            * protection against accidental changes
+            * load function provides option to avoid running untrusted code in precompiled form
+
+    Error Handling
+        error() --> signal error in code
+        assert()--> check for error in first statement, if false asset raises error

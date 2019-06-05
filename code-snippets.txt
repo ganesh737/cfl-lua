@@ -1,0 +1,9 @@
+Actual Code (===)
+Useful Idiom (---)
+
+=== if not x then x = v end
+--- x = x or v
+
+=== C code: a ? b : c
+--- a and b or c
+Eg: max = (x > y) and x or y
